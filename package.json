@@ -2,6 +2,7 @@
   "name": "slido-evaluate",
   "version": "1.0.0",
   "description": "Evaluate slido results",
+  "repository": "https://github.com/yhlbr/slido-evaluate",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

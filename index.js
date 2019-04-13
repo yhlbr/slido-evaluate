@@ -2,7 +2,7 @@ const url = "https://wall2.sli.do/event/2dwz6re4";
 const osc_ip = '172.20.105.181';
 const osc_port = 9000;
 
-
+const sleep = require('sleep');
 const puppeteer = require('puppeteer');
 const { Client } = require('node-osc');
 const osc_client = new Client(osc_ip, osc_port);
@@ -19,21 +19,21 @@ const namesSelector = '.poll-question-option__title';
 
     if(!new_percentages) {
       var current_percentages = {};
-      names.forEach(function(el) {
+      names.forEach(el => {
         current_percentages[el] = 0.5;
       });
     }
 
     var new_percentages = await get_percentages(page, names);
+    var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
     console.log(current_percentages);
 
-    
-    osc_client.send('/composition/layers/1/clips/1/video/source/shapergenerator/shaper/scale', new_percentages[names[0]]);
-    osc_client.send('/composition/layers/2/clips/1/video/source/shapergenerator/shaper/scale', new_percentages[names[1]]);
-    osc_client.send('/composition/layers/3/clips/1/video/source/shapergenerator/shaper/scale', new_percentages[names[2]]);
-
-    
+    osc_client.send('/composition/layers/1/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[0]]);
+    osc_client.send('/composition/layers/2/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[1]]);
+    osc_client.send('/composition/layers/3/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[2]]);
+ 
+    await sleep.sleep(0.01);
   }
   
 
@@ -80,9 +80,23 @@ async function get_percentages(page, names) {
     });
 
     var sorted = {};
-    Object.keys(result).sort().forEach(function(key) {
+    Object.keys(result).sort().forEach(key => {
       sorted[key] = result[key];
     });
 
     return sorted;
+}
+
+function smooth_percentages(current_percentages, new_percentages) {
+  Object.keys(new_percentages).forEach(key => {
+    // TODO: Wenn Unterschied weniger als 0.1, nicht ausfuehren
+    if(current_percentages[key] < new_percentages[key]) {
+      current_percentages[key] += 0.01;
+    } else if(current_percentages[key] > new_percentages[key]) {
+      current_percentages[key] -= 0.01;
+    }
+
+    current_percentages[key] = Math.round(current_percentages[key] * 100) / 100;
+  });
+  return current_percentages;
 }

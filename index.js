@@ -2,7 +2,7 @@ const url = "https://wall2.sli.do/event/2dwz6re4";
 const osc_ip = '172.20.105.181';
 const osc_port = 9000;
 
-const sleep = require('sleep');
+const util = require('util');
 const puppeteer = require('puppeteer');
 const { Client } = require('node-osc');
 const osc_client = new Client(osc_ip, osc_port);
@@ -28,17 +28,13 @@ const namesSelector = '.poll-question-option__title';
     var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
     names.forEach((name, idx) => {
-      osc_client.send(util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', key + 1), current_percentages[name]);  
+      osc_client.send(util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', idx + 1), current_percentages[name]);  
     });
+    console.log(current_percentages);
 
- 
-    await sleep.sleep(0.01);
+    await sleep(5);
   }
   
-
-  
-  
-
 
   await browser.close();
   osc_client.close();
@@ -89,11 +85,16 @@ async function get_percentages(page, names) {
 function smooth_percentages(current_percentages, new_percentages) {
   Object.keys(new_percentages).forEach(key => {
     if(current_percentages[key] < new_percentages[key]) {
-      current_percentages[key] += 0.01;
+      current_percentages[key] += 0.005;
     } else if(current_percentages[key] > new_percentages[key]) {
-      current_percentages[key] -= 0.01;
+      current_percentages[key] -= 0.005;
     }
-    current_percentages[key] = Math.round(current_percentages[key] * 100) / 100;
+    current_percentages[key] = Math.round(current_percentages[key] * 1000) / 1000;
   });
   return current_percentages;
+}
+
+
+async function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -25,10 +25,13 @@ const namesSelector = '.poll-question-option__title';
     }
 
     var new_percentages = await get_percentages(page, names);
+    new_percentages = sort_obj_by_keys(new_percentages);
+    current_percentages = sort_obj_by_keys(current_percentages);
     var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
     names.forEach((name, idx) => {
-      osc_client.send(util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', idx + 1), current_percentages[name]);  
+      var endpoint = util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', idx + 1);
+      osc_client.send(endpoint, current_percentages[name]);  
     });
     console.log(current_percentages);
 
@@ -54,7 +57,6 @@ async function get_names(page) {
         return anchor.textContent.trim();
     });
   }, namesSelector);
-  names = names.sort();
 
   return names;
 }
@@ -74,12 +76,7 @@ async function get_percentages(page, names) {
       result[el] = percentages[idx];
     });
 
-    var sorted = {};
-    Object.keys(result).sort().forEach(key => {
-      sorted[key] = result[key];
-    });
-
-    return sorted;
+    return result;
 }
 
 function smooth_percentages(current_percentages, new_percentages) {
@@ -97,4 +94,13 @@ function smooth_percentages(current_percentages, new_percentages) {
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function sort_obj_by_keys(obj) {
+  var sorted = {};
+  Object.keys(obj).sort().forEach(key => {
+    sorted[key] = obj[key];
+  });
+
+  return sorted;
 }

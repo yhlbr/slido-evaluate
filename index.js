@@ -27,11 +27,10 @@ const namesSelector = '.poll-question-option__title';
     var new_percentages = await get_percentages(page, names);
     var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
-    console.log(current_percentages);
+    names.forEach((name, idx) => {
+      osc_client.send(util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', key + 1), current_percentages[name]);  
+    });
 
-    osc_client.send('/composition/layers/1/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[0]]);
-    osc_client.send('/composition/layers/2/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[1]]);
-    osc_client.send('/composition/layers/3/clips/1/video/source/shapergenerator/shaper/scale', current_percentages[names[2]]);
  
     await sleep.sleep(0.01);
   }
@@ -89,13 +88,11 @@ async function get_percentages(page, names) {
 
 function smooth_percentages(current_percentages, new_percentages) {
   Object.keys(new_percentages).forEach(key => {
-    // TODO: Wenn Unterschied weniger als 0.1, nicht ausfuehren
     if(current_percentages[key] < new_percentages[key]) {
       current_percentages[key] += 0.01;
     } else if(current_percentages[key] > new_percentages[key]) {
       current_percentages[key] -= 0.01;
     }
-
     current_percentages[key] = Math.round(current_percentages[key] * 100) / 100;
   });
   return current_percentages;

@@ -1,6 +1,7 @@
-const url = "https://wall2.sli.do/event/2dwz6re4";
+const url = "https://wall.sli.do/event/2dwz6re4";
 const osc_ip = '172.20.105.181';
 const osc_port = 9000;
+const osc_endpoint = '/composition/layers/%d/clips/1/video/effects/transform/scale';
 
 const util = require('util');
 const puppeteer = require('puppeteer');
@@ -13,9 +14,16 @@ const namesSelector = '.poll-question-option__title';
   const browser = await puppeteer.launch();
   const page = await init_page(browser);
 
+  var names = [];
 
   while(true) {
-    var names = await get_names(page);
+    if(names.length <= 0) {
+      names = await get_names(page);
+      continue;
+    }
+
+    names = await get_names(page);
+
 
     if(!new_percentages) {
       var current_percentages = {};
@@ -30,7 +38,7 @@ const namesSelector = '.poll-question-option__title';
     var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
     names.forEach((name, idx) => {
-      var endpoint = util.format('/composition/layers/%d/clips/1/video/source/shapergenerator/shaper/scale', idx + 1);
+      var endpoint = util.format(osc_endpoint, idx + 1);
       osc_client.send(endpoint, current_percentages[name]);  
     });
     console.log(current_percentages);
@@ -46,7 +54,7 @@ const namesSelector = '.poll-question-option__title';
 
 async function init_page(browser) {
   var page = await browser.newPage();
-  await page.goto(url, {waitUntil: 'networkidle0'});
+  await page.goto(url, {waitUntil: 'load'});
   return page;
 }
 

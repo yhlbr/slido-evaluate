@@ -1,7 +1,7 @@
-const url = "https://wall.sli.do/event/2dwz6re4";
-const osc_ip = '172.20.105.181';
-const osc_port = 9000;
-const osc_endpoint = '/composition/layers/%d/clips/1/video/effects/transform/scale';
+const url = "https://wall2.sli.do/event/kijvny1l";
+const osc_ip = '172.20.105.133';
+const osc_port = 9001;
+const osc_endpoint = '/composition/layers/%d/clips/7/video/effects/transform/scale';
 
 const util = require('util');
 const puppeteer = require('puppeteer');
@@ -37,11 +37,12 @@ const namesSelector = '.poll-question-option__title';
     current_percentages = sort_obj_by_keys(current_percentages);
     var current_percentages = smooth_percentages(current_percentages, new_percentages);
 
-    names.forEach((name, idx) => {
-      var endpoint = util.format(osc_endpoint, idx + 1);
-      osc_client.send(endpoint, current_percentages[name]);  
+    Object.keys(current_percentages).forEach((name, idx) => {
+      var endpoint = util.format(osc_endpoint, idx + 4);
+      osc_client.send(endpoint, current_percentages[name]);
     });
     console.log(current_percentages);
+    
 
     await sleep(5);
   }
